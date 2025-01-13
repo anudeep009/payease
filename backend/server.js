@@ -1,9 +1,10 @@
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./db/index.js";
-import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import cors from "cors";
+import accountRoutes from "./routes/account.routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
 });
 app.use("/api/v1", authRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/account", accountRoutes);
 
 app.get("/", (req, res) => {
   res.send("server running");

@@ -38,4 +38,45 @@ const searchUser = async (req, res) => {
   }
 };
 
-export { searchUser }
+const updateUser = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { firstname, lastname, password } = req.body;
+
+    if (!firstname && !lastname && !password) {
+      return res.status(400).json({ message: "No fields to update provided." });
+    }
+
+    const user = await User.findOne({ username: username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    let updateData = {};
+    if (firstname) updateData.firstname = firstname;
+    if (lastname) updateData.lastname = lastname;
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    await User.updateOne({ username: username }, { $set: updateData });
+
+    const updatedUser = await User.findOne({ username: username }).select(
+      "-password"
+    );
+
+    res.status(200).json({
+      message: "User information updated successfully.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred.", error: error.message });
+  }
+};
+
+export { searchUser, updateUser }
