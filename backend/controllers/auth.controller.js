@@ -80,9 +80,9 @@ const signIn = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { username } = req.params;
-    const { firstName, lastName, password } = req.body;
+    const { firstname, lastname, password } = req.body;
 
-    if (!firstName && !lastName && !password) {
+    if (!firstname && !lastname && !password) {
       return res.status(400).json({ message: "No fields to update provided." });
     }
 
@@ -92,8 +92,8 @@ const updateUser = async (req, res) => {
     }
 
     let updateData = {};
-    if (firstName) updateData.firstName = firstName;
-    if (lastName) updateData.lastName = lastName;
+    if (firstname) updateData.firstname = firstname; 
+    if (lastname) updateData.lastname = lastname;
 
     if (password) {
       const salt = await bcrypt.genSalt(10);

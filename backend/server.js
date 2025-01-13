@@ -1,7 +1,8 @@
 import express from "express";
 import connectDB from "./db/index.js";
 import dotenv from "dotenv";
-import userRoutes from "./routes/auth.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import cors from "cors";
 
 const app = express();
@@ -16,7 +17,12 @@ const port = process.env.PORT || 3000;
 connectDB();
 
 app.use(express.json());
-app.use("/api/v1", userRoutes);
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+app.use("/api/v1", authRoutes);
+app.use("/api/v1/user", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("server running");
