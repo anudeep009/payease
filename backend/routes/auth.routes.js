@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { signUp } from "../controllers/auth.controller.js";
-import { signIn } from "../controllers/auth.controller.js";
+import { signUp, signIn, updateUser } from "../controllers/auth.controller.js";
+import verifyJWT from "../middlewares/verifyJWT.js";
 
 const router = Router();
 
@@ -9,6 +9,13 @@ const router = Router();
 //==============================
 router.post("/signup", signUp);
 router.post("/signin", signIn);
+
+// ==============================
+// protected routes
+//==============================
+
+//update user details
+router.put("/update-user",verifyJWT ,updateUser);
 
 
 export default router;
