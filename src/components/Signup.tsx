@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import Input from "./ui/Input.tsx";
 import Button from "./ui/Button.tsx";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "sonner";
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +19,8 @@ const Signup: React.FC = () => {
     username: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,11 +46,24 @@ const Signup: React.FC = () => {
     return Object.values(newErrors).every((error) => !error);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      console.log("Signup data:", formData);
-      alert("Signup successful!");
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/signup`,{
+        firstname : formData.firstName,
+        lastname : formData.lastName,
+        username : formData.username,
+        password : formData.password
+      });
+      if(response.status == 201){
+        toast.success("Signup Successful please sign in");
+        navigate("/signin");
+      }
+      } catch (error : any) {
+        console.error(error);
+        toast.error(error.response?.data?.message || "An error occurred during sign up");
+      }
     }
   };
 
@@ -100,12 +117,20 @@ const Signup: React.FC = () => {
       />
       <Link to={"/signin"} >
       <h4 className="text-gray-500 text-sm m-2 hover:underline">
-        already a user? Sign in 
+        already a user? Sign in!
       </h4>
       </Link>
-      <Button type="submit" variant="primary" fullWidth>
-        Sign up
-      </Button>
+      {
+        loading ? (
+          <Button disabled variant="primary" fullWidth>
+          Signing up...
+        </Button>
+        ) : (
+          <Button type="submit" variant="primary" fullWidth>
+            Sign up
+          </Button>
+        )
+      }
     </form>
     </div>
   );

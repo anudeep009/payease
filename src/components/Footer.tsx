@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 
 export default function Footer() {
   return (
@@ -5,6 +6,7 @@ export default function Footer() {
       <div className="text-xs md:text-base lg:text-sm">
         &copy; {new Date().getFullYear()} PayEase. Made with ❤️ by Anudeep. All rights reserved.
       </div>
+      <Toaster />
     </footer>
   );
 }

@@ -3,6 +3,7 @@ import './App.css'
 import { Route,Routes } from 'react-router-dom'
 import Signup from './components/Signup'
 import Signin from './components/Signin'
+import Home from './pages/Home'
 
 function App() {
 
@@ -12,6 +13,7 @@ function App() {
       <Route path='/' element={<Layout />}>
      <Route path='/' element={<Signup />} />
      <Route path='/signin' element={<Signin />} />
+     <Route path='/home' element={<Home />} />
      </Route>
      </Routes>
     </>
