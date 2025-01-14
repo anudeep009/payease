@@ -38,7 +38,6 @@ export default function Dashboard() {
   )
     if(response.status == 200){
       toast.success("changes saved successfully");
-      console.log(response.data);
       localStorage.setItem("firstname",response.data?.user.firstname)
       localStorage.setItem("lastname",response.data?.user.lastname)
     }
@@ -56,7 +55,7 @@ export default function Dashboard() {
     const token = localStorage.getItem("token");
     try {
       setPasswordLoading(true);
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/user/update-user`,
+      const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/v1/user/update-user`,
         {
           password : newPassword
         },
