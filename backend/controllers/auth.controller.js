@@ -75,6 +75,8 @@ const signIn = async (req, res) => {
       token,
       username: user.username,
       userid: user._id,
+      firstname: user.firstname,
+      lastname : user.lastname,
     });
   } catch (error) {
     console.error("Error during sign in:", error);

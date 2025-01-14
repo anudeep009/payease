@@ -1,4 +1,5 @@
 import { Search, User, Wallet, Menu } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 function Header() {
   return (
@@ -10,7 +11,9 @@ function Header() {
             <button className="p-2 hover:bg-gray-100 rounded-full lg:hidden">
               <Menu className="h-6 w-6 text-gray-700" />
             </button>
-            <div className="text-blue-600 font-bold text-2xl">PayEase</div>
+            <Link to={"/home"}>
+            <div className="text-blue-600 font-bold text-2xl">PayEase</div>         
+            </Link>
           </div>
 
           {/* Center section with search */}
@@ -30,10 +33,12 @@ function Header() {
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <Wallet className="h-6 w-6 text-gray-700" />
             </button>
-            <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-full">
+            <Link to={"/dashboard"}>
+              <button className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-full">
               <User className="h-6 w-6 text-gray-700" />
               <span className="hidden lg:inline text-sm font-medium">Profile</span>
             </button>
+            </Link>
           </div>
         </div>
       </div>
