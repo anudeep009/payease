@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { User, KeyRound, Shield } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 interface UserData {
   firstName: string;
@@ -16,25 +18,65 @@ export default function Dashboard() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: '',
-  });
+  const [newPassword, setNewPassword] = useState("");
+  const [loading , setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const handleSaveChanges = (e: React.FormEvent) => {
+  const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
-    // backend logic
-    console.log('Saving user data to backend:', userData);
+    const token = localStorage.getItem("token");
+    try {
+      setLoading(true);
+      const response = await axios.put(`${import.meta.env.VITE_BASE_URL}/api/v1/user/update-user`,{
+      firstname : userData.firstName,
+      lastname : userData.lastName
+    },{
+      headers : {
+        Authorization : `Bearer ${token}`
+      }
+    }
+  )
+    if(response.status == 200){
+      toast.success("changes saved successfully");
+      console.log(response.data);
+      localStorage.setItem("firstname",response.data?.user.firstname)
+      localStorage.setItem("lastname",response.data?.user.lastname)
+    }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.data?.message || "an error occoured while saving changes")
+    } finally {
+      setLoading(false);
+    }
     setIsEditing(false);
   };
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    // backend logic for password
-    console.log('Password update requested');
+    const token = localStorage.getItem("token");
+    try {
+      setPasswordLoading(true);
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/user/update-user`,
+        {
+          password : newPassword
+        },
+        {
+          headers : {
+            Authorization : `Bearer ${token}`
+          }
+        }
+      )
+    if(response.status == 200){
+      toast.success("password updated successfully");
+    }
+    } catch (error : any) {
+      console.error(error);
+      toast.error(error?.data?.message || "error while updating password");
+    } finally{
+      setPasswordLoading(false);
+    }
     setIsChangingPassword(false);
-    setPasswords({ current: '', new: '', confirm: '' });
+    setNewPassword("");
   };
 
   useEffect(() => {
@@ -105,12 +147,23 @@ export default function Dashboard() {
 
                   {isEditing ? (
                     <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-                      >
-                        Save Changes
-                      </button>
+                      {
+                        loading ? (
+                          <button
+                            disabled
+                            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                          >
+                            Saving Changes...
+                          </button>
+                        ) : (
+                          <button
+                            type="submit"
+                            className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                          >
+                            Save Changes
+                          </button>
+                        )
+                      }
                       <button
                         type="button"
                         onClick={() => setIsEditing(false)}
@@ -151,61 +204,39 @@ export default function Dashboard() {
                   <form onSubmit={handlePasswordChange} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-600 mb-1">
-                        Current Password
-                      </label>
-                      <input
-                        type="password"
-                        value={passwords.current}
-                        onChange={(e) =>
-                          setPasswords((prev) => ({ ...prev, current: e.target.value }))
-                        }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
                         New Password
                       </label>
                       <input
                         type="password"
-                        value={passwords.new}
-                        onChange={(e) =>
-                          setPasswords((prev) => ({ ...prev, new: e.target.value }))
-                        }
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                         required
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        Confirm New Password
-                      </label>
-                      <input
-                        type="password"
-                        value={passwords.confirm}
-                        onChange={(e) =>
-                          setPasswords((prev) => ({ ...prev, confirm: e.target.value }))
-                        }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-
                     <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-                      >
-                        Update Password
-                      </button>
+                      {
+                        passwordLoading ? (
+                          <button
+                          disabled
+                          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                        >
+                          Updating Password...
+                        </button>
+                        ) : (
+                        <button
+                          type="submit"
+                          className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                        >
+                          Update Password
+                        </button>
+                        )
+                      }
                       <button
                         type="button"
                         onClick={() => {
                           setIsChangingPassword(false);
-                          setPasswords({ current: '', new: '', confirm: '' });
+                          setNewPassword("");
                         }}
                         className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200"
                       >
