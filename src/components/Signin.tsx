@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Input from "./ui/Input.tsx";
 import Button from "./ui/Button.tsx";
 import { Link, useNavigate } from "react-router-dom";
@@ -38,6 +38,11 @@ const Signin: React.FC = () => {
     return Object.values(newErrors).every((error) => !error);
   };
 
+  useEffect(() => {
+    if(localStorage.getItem("token")){
+      navigate("/home");
+    }
+  },[])
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {

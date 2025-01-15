@@ -6,67 +6,97 @@ import { useNavigate } from 'react-router-dom';
 
 interface User {
   username: string;
-  fullName: string;
-  avatar: string;
 }
-
-const mockUsers: User[] = [
-  { username: "sarah_smith", fullName: "Sarah Smith", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
-  { username: "john_doe", fullName: "John Doe", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
-  { username: "emma_wilson", fullName: "Emma Wilson", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" },
-];
 
 export default function Payment() {
   const [balance, setBalance] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [balanceLoading,setBalanceLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-  if(!token){
-    navigate("/");
-  }
-
-  const filteredUsers = mockUsers.filter(user => 
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleTransfer = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedUser && amount) {
-      // Handle transfer logic here
-      alert(`Transferred $${amount} to ${selectedUser.fullName}`);
-      setAmount('');
-      setSelectedUser(null);
-      setSearchTerm('');
+  const token = localStorage.getItem('token');
+  useEffect(() => {
+    if (!token) {
+      navigate('/');
     }
-  };
+  }, [token, navigate]);
 
   const fetchBalance = async () => {
     try {
       setBalanceLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/account/balance`,{
-        headers : {
-          Authorization : `Bearer ${token}`
-        }
-      })
-      if(response.status == 200){
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/account/balance`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
         setBalance(response.data.balance);
       }
-    } catch (error : any) {
+    } catch (error: any) {
       console.error(error);
-      toast.error(error.data?.message || "error while fetching balance")
+      toast.error(error.response?.data?.message || 'Error fetching balance');
     } finally {
       setBalanceLoading(false);
     }
-  }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setSearchLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/user/search`,
+        {
+          params: { query: searchTerm },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        response.data.users.map((user : any) => {
+          console.log(user?.username);
+          setUsers(response.data.users);
+        })
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Error searching users');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      fetchUsers();
+    } else {
+      toast.error('Please enter a valid search term');
+    }
+  };
+
+  const handleTransfer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedUser && amount) {
+      if (Number(amount) <= 0) {
+        toast.error('Enter a valid amount greater than zero');
+        return;
+      }
+      // Mock transfer logic
+      toast.success(`Transferred $${amount} to ${selectedUser.username}`);
+      setAmount('');
+      setSelectedUser(null);
+      setSearchTerm('');
+      setUsers([]);
+    }
+  };
 
   useEffect(() => {
     fetchBalance();
-  },[])
+  }, []);
 
   return (
     <div className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -77,14 +107,14 @@ export default function Payment() {
           <h2 className="text-xl font-semibold">Your Balance</h2>
         </div>
         <p className="text-3xl font-bold">
-          {balanceLoading ? "loading..." : balance.toFixed(2)}
+          {balanceLoading ? <span className="loader" /> : `$${balance.toFixed(2)}`}
         </p>
       </div>
 
       {/* Transfer Section */}
       <form onSubmit={handleTransfer} className="p-6">
         <h3 className="text-lg font-semibold mb-4">Transfer Money</h3>
-        
+
         {/* Search Recipients */}
         <div className="relative mb-4">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -93,50 +123,41 @@ export default function Payment() {
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Search by username"
+            placeholder="Search by firstname or lastname"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
           />
         </div>
 
         {/* Users List */}
-        {searchTerm && (
-          <div className="mb-4 max-h-48 overflow-y-auto">
-            {filteredUsers.map((user) => (
-              <div
-                key={user.username}
-                onClick={() => {
-                  setSelectedUser(user);
-                  setSearchTerm('');
-                }}
-                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 ${
-                  selectedUser?.username === user.username ? 'bg-blue-50' : ''
-                }`}
-              >
-                <img
-                  src={user.avatar}
-                  alt={user.fullName}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-medium">{user.fullName}</p>
-                  <p className="text-sm text-gray-500">@{user.username}</p>
-                </div>
+        {searchLoading ? (
+          <p className="text-center text-gray-500">Searching...</p>
+        ) : (
+          searchTerm &&
+          users.map((user) => (
+            <div
+              key={user.username}
+              onClick={() => {
+                setSelectedUser(user);
+                setSearchTerm('');
+                setUsers([]);
+              }}
+              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 ${
+                selectedUser?.username === user.username ? 'bg-blue-50' : ''
+              }`}
+            >
+              <div>
+                <p className="text-sm text-gray-500">@{user.username}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
 
         {/* Selected User */}
         {selectedUser && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
-            <img
-              src={selectedUser.avatar}
-              alt={selectedUser.fullName}
-              className="w-10 h-10 rounded-full object-cover"
-            />
             <div>
-              <p className="font-medium">{selectedUser.fullName}</p>
               <p className="text-sm text-gray-500">@{selectedUser.username}</p>
             </div>
           </div>

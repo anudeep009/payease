@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "./ui/Input.tsx";
 import Button from "./ui/Button.tsx";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,6 +27,11 @@ const Signup: React.FC = () => {
     setFormData({ ...formData, [name]: value });
     setErrors({ ...errors, [name]: "" });
   };
+  useEffect(() => {
+      if(localStorage.getItem("token")){
+        navigate("/home");
+      }
+    },[])
 
   const validate = () => {
     const newErrors: typeof errors = {
@@ -50,6 +55,7 @@ const Signup: React.FC = () => {
     e.preventDefault();
     if (validate()) {
       try {
+        setLoading(true);
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/signup`,{
         firstname : formData.firstName,
         lastname : formData.lastName,
@@ -63,6 +69,8 @@ const Signup: React.FC = () => {
       } catch (error : any) {
         console.error(error);
         toast.error(error.response?.data?.message || "An error occurred during sign up");
+      } finally{
+        setLoading(false);
       }
     }
   };
