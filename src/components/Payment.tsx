@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Send, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   username: string;
@@ -14,10 +17,17 @@ const mockUsers: User[] = [
 ];
 
 export default function Payment() {
-  const [balance] = useState(2584.57);
+  const [balance, setBalance] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [balanceLoading,setBalanceLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+  if(!token){
+    navigate("/");
+  }
 
   const filteredUsers = mockUsers.filter(user => 
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -35,6 +45,29 @@ export default function Payment() {
     }
   };
 
+  const fetchBalance = async () => {
+    try {
+      setBalanceLoading(true);
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/account/balance`,{
+        headers : {
+          Authorization : `Bearer ${token}`
+        }
+      })
+      if(response.status == 200){
+        setBalance(response.data.balance);
+      }
+    } catch (error : any) {
+      console.error(error);
+      toast.error(error.data?.message || "error while fetching balance")
+    } finally {
+      setBalanceLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchBalance();
+  },[])
+
   return (
     <div className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
       {/* Balance Section */}
@@ -43,7 +76,9 @@ export default function Payment() {
           <Wallet className="w-8 h-8" />
           <h2 className="text-xl font-semibold">Your Balance</h2>
         </div>
-        <p className="text-3xl font-bold">${balance.toFixed(2)}</p>
+        <p className="text-3xl font-bold">
+          {balanceLoading ? "loading..." : balance.toFixed(2)}
+        </p>
       </div>
 
       {/* Transfer Section */}

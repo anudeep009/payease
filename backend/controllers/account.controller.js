@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 const getBalance = async (req, res) => {
   try {
-    const { userid } = req.params;
+    const userid = req.user.userId;
 
     if (!mongoose.Types.ObjectId.isValid(userid)) {
       return res.status(400).json({ message: "Invalid userid format" });

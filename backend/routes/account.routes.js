@@ -5,7 +5,7 @@ import { getBalance, transfer } from "../controllers/account.controller.js";
 const router = Router();
 
 //route for to fetch balance
-router.get("/balance/:userid",verifyJWT, getBalance);
+router.get("/balance",verifyJWT, getBalance);
 
 //route for transfer amount
 router.post("/transfer",verifyJWT, transfer);
