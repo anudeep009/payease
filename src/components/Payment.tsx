@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface User {
   username: string;
+  id: string;
 }
 
 export default function Payment() {
@@ -19,6 +20,7 @@ export default function Payment() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
+
   useEffect(() => {
     if (!token) {
       navigate('/');
@@ -28,11 +30,14 @@ export default function Payment() {
   const fetchBalance = async () => {
     try {
       setBalanceLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/account/balance`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/account/balance`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.status === 200) {
         setBalance(response.data.balance);
       }
@@ -50,17 +55,18 @@ export default function Payment() {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/api/v1/user/search`,
         {
-          params: { query: searchTerm },
+          params: { query: searchTerm.trim() },
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
       if (response.status === 200) {
-        response.data.users.map((user : any) => {
-          console.log(user?.username);
-          setUsers(response.data.users);
-        })
+        const usersList: User[] = response.data.users.map((user: any) => ({
+          username: user.username,
+          id: user.id,
+        }));
+        setUsers(usersList);
       }
     } catch (error: any) {
       console.error(error);
@@ -78,19 +84,47 @@ export default function Payment() {
     }
   };
 
-  const handleTransfer = (e: React.FormEvent) => {
+  const confirmTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedUser && amount) {
       if (Number(amount) <= 0) {
         toast.error('Enter a valid amount greater than zero');
         return;
       }
-      // Mock transfer logic
-      toast.success(`Transferred $${amount} to ${selectedUser.username}`);
-      setAmount('');
-      setSelectedUser(null);
-      setSearchTerm('');
-      setUsers([]);
+
+      const isConfirmed = window.confirm(
+        `Are you sure you want to transfer $${amount} to @${selectedUser.username}?`
+      );
+
+      if (!isConfirmed) return;
+
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/api/v1/account/transfer`,
+          {
+            toUserId: selectedUser.id,
+            amount: amount,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          toast.success('Transaction successful');
+          fetchBalance();
+        }
+      } catch (error: any) {
+        console.error(error);
+        toast.error(error.response?.data?.message || 'Error during transfer');
+      } finally {
+        setAmount('');
+        setSelectedUser(null);
+        setSearchTerm('');
+        setUsers([]);
+      }
     }
   };
 
@@ -112,7 +146,7 @@ export default function Payment() {
       </div>
 
       {/* Transfer Section */}
-      <form onSubmit={handleTransfer} className="p-6">
+      <form onSubmit={confirmTransfer} className="p-6">
         <h3 className="text-lg font-semibold mb-4">Transfer Money</h3>
 
         {/* Search Recipients */}
@@ -123,7 +157,7 @@ export default function Payment() {
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Search by firstname or lastname"
+            placeholder="Search by username"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyUp={(e) => e.key === 'Enter' && handleSearch()}
@@ -137,19 +171,17 @@ export default function Payment() {
           searchTerm &&
           users.map((user) => (
             <div
-              key={user.username}
+              key={user.id}
               onClick={() => {
                 setSelectedUser(user);
                 setSearchTerm('');
                 setUsers([]);
               }}
               className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 ${
-                selectedUser?.username === user.username ? 'bg-blue-50' : ''
+                selectedUser?.id === user.id ? 'bg-blue-50' : ''
               }`}
             >
-              <div>
-                <p className="text-sm text-gray-500">@{user.username}</p>
-              </div>
+              <p className="text-sm text-gray-500">@{user.username}</p>
             </div>
           ))
         )}
@@ -157,9 +189,7 @@ export default function Payment() {
         {/* Selected User */}
         {selectedUser && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
-            <div>
-              <p className="text-sm text-gray-500">@{selectedUser.username}</p>
-            </div>
+            <p className="text-sm text-gray-500">@{selectedUser.username}</p>
           </div>
         )}
 
