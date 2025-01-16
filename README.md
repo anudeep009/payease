@@ -1,50 +1,78 @@
-# React + TypeScript + Vite
+# PayEase
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PayEase is a simple and user-friendly web application that facilitates secure and seamless money transactions between users. Built with modern technologies, PayEase ensures a smooth experience for its users.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. User Authentication
+- **Sign Up**: New users can register an account with their details.
+- **Sign In**: Existing users can log in securely to access their account.
 
-## Expanding the ESLint configuration
+### 2. Profile Management
+- Update profile information including:
+  - Full Name
+  - Last Name
+  - Password
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 3. Transactions
+- Search for users by name.
+- Initiate and send money transactions to other users securely.
 
-- Configure the top-level `parserOptions` property like this:
+## Tech Stack
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Frontend
+- **React**: Component-based UI development for a dynamic and responsive interface.
+- **Tailwind CSS**: Utility-first CSS framework for fast and efficient styling.
+- **TypeScript**: Enhances JavaScript with static typing for better code quality and maintainability.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### Backend
+- **Node.js**: Server-side runtime for building scalable applications.
+- **Express**: Web framework for handling routes and API endpoints.
+- **MongoDB**: NoSQL database for efficient and flexible data storage.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## How to Run the Application
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Prerequisites
+- **Node.js**: Ensure Node.js is installed on your system.
+- **MongoDB**: A running MongoDB instance.
+
+### Steps
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/anudeep009/paytm-clone.git
+   cd payease
+   ```
+
+2. **Install Dependencies**
+   - For frontend:
+     ```bash
+     npm install
+     ```
+   - For backend:
+     ```bash
+     cd backend
+     npm install
+     ```
+
+3. **Environment Variables**
+   - Create a `.env` file in the `backend` directory with the following:
+     ```env
+     PORT=5000
+     MONGO_URI=<your-mongodb-uri>
+     JWT_SECRET=<your-jwt-secret>
+     ```
+
+4. **Start the Application**
+   - Start the backend server:
+     ```bash
+     cd backend
+     npm run dev
+     ```
+   - Start the frontend server:
+     ```bash
+     cd frontend
+     npm start
+     ```
+
+5. **Access the Application**
+   - Open your browser and navigate to `http://localhost:3000`.
