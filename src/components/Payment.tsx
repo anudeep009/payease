@@ -114,7 +114,7 @@ export default function Payment() {
 
         if (response.status === 200) {
           toast.success('Transaction successful');
-          fetchBalance();
+          await fetchBalance();
         }
       } catch (error: any) {
         console.error(error);

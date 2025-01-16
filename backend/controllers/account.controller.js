@@ -38,7 +38,7 @@ const transfer = async (req, res) => {
   const session = await mongoose.startSession();
   try {
     const { toUserId, amount } = req.body;
-
+    
     if (amount <= 0) {
       return res.status(400).json({ message: "Invalid transfer amount" });
     }
@@ -52,10 +52,10 @@ const transfer = async (req, res) => {
       await session.abortTransaction();
       return res.status(400).json({ message: "Insufficient balance" });
     }
-
     const toAccount = await Account.findOne({
       userid: new mongoose.Types.ObjectId(toUserId),
     }).session(session);
+
     if (!toAccount) {
       await session.abortTransaction();
       return res.status(400).json({ message: "Invalid To account" });
