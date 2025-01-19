@@ -17,15 +17,17 @@ export default function Payment() {
   const [users, setUsers] = useState<User[]>([]);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [transcationLoading, settranscationLoading] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (!token) {
-      navigate('/');
+      console.log("no token found in local storage redirecting to signup");
+      navigate('/signup');
     }
-  }, [token, navigate]);
+  }, [token]);
 
   const fetchBalance = async () => {
     try {
@@ -99,6 +101,7 @@ export default function Payment() {
       if (!isConfirmed) return;
 
       try {
+        settranscationLoading(true);
         const response = await axios.post(
           `${import.meta.env.VITE_BASE_URL}/api/v1/account/transfer`,
           {
@@ -124,6 +127,7 @@ export default function Payment() {
         setSelectedUser(null);
         setSearchTerm('');
         setUsers([]);
+        settranscationLoading(false);
       }
     }
   };
@@ -216,7 +220,16 @@ export default function Payment() {
         </div>
 
         {/* Submit Button */}
+        {
+          transcationLoading ? (
         <button
+          disabled
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <span className="loader" />
+        </button>
+          ) : (
+            <button
           type="submit"
           disabled={!selectedUser || !amount}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -224,6 +237,8 @@ export default function Payment() {
           <Send className="w-5 h-5" />
           Transfer Money
         </button>
+          )
+        }
       </form>
     </div>
   );
